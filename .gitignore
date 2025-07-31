@@ -1,0 +1,113 @@
+# Keep this .gitignore file
+!.gitignore
+
+# Terraform sensitive files
+./**/terraform_backend_override.tf
+./**/terraform.tfvars
+./**/terraform.tfstate
+./**/terraform.tfstate.backup
+./**/terraform.tfstate.*.backup
+.**/.terraform/
+.**/.terraform.lock.hcl
+
+# Login scripts and credentials
+./**/login*.sh
+./**/*credentials*
+./**/*secrets*
+./**/*token*
+
+# Environment files
+./**/.env
+./**/.envrc
+.**/environment.sh
+
+# MLflow and experiment data
+.**/mlruns/
+.**/mlflow-artifacts/
+.**/experiments/
+.**/models/logs/
+.**/models/cache/
+.**/models/fine-tuned/
+.**/cost_analysis/
+.**/comparison/
+
+# Python cache and virtual environments
+.**/__pycache__/
+.**/*.pyc
+.**/*.pyo
+.**/*.pyd
+./**/.Python
+.**/venv/
+.**/env/
+.**/ENV/
+./**/.venv/
+
+# Jupyter notebooks checkpoints
+.**/.ipynb_checkpoints/
+
+# IDE and editor files
+.**/.vscode/
+.**/.idea/
+.**/*.swp
+.**/*.swo
+.**/.*~
+
+# OS generated files
+.**/.DS_Store
+.**/.DS_Store?
+.**/._*
+.**/.Spotlight-V100
+.**/.Trashes
+.**/ehthumbs.db
+.**/Thumbs.db
+
+# Logs and temporary files
+.**/*.log
+.**/logs/
+.**/tmp/
+.**/temp/
+.**/*.tmp
+.**/*.temp
+
+# SSL certificates and keys
+.**/*.pem
+.**/*.key
+.**/*.crt
+.**/*.cert
+.**/*.p12
+.**/*.pfx
+
+# Backup files
+.**/*.bak
+.**/*.backup
+.**/*~
+
+# Large model files (should be stored in proper model registry)
+.**/*.bin
+.**/*.safetensors
+.**/*.ckpt
+.**/*.pt
+.**/*.pth
+.**/pytorch_model.bin
+.**/model.safetensors
+
+# Dataset cache
+.**/datasets/cache/
+.**/huggingface/
+.**/transformers/
+
+# Slurm job files
+.**/slurm-*.out
+.**/slurm-*.err
+.**/*.sbatch.out
+.**/*.sbatch.err
+
+# Docker and container files
+.**/Dockerfile.local
+.**/docker-compose.override.yml
+.**/.dockerignore
+
+# Kubernetes secrets and configs
+.**/kubeconfig
+.**/k8s-secrets.yaml
+.**/secrets.yaml

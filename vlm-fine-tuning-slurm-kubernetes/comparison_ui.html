@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llama 3.2 VLM Model Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 80vh;
+        }
+
+        .input-panel {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .output-panel {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .base-panel {
+            border-right: 2px solid #e9ecef;
+            background: #fff8f0;
+        }
+
+        .finetuned-panel {
+            background: #f0f8ff;
+        }
+
+        .panel-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .input-panel .panel-title {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .base-panel .panel-title {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+
+        .finetuned-panel .panel-title {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .upload-area {
+            border: 3px dashed #bdc3c7;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #bdc3c7;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .output-content {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 10px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            min-height: 400px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            word-wrap: break-word;
+        }
+
+        .warning {
+            color: #f39c12;
+            background: #fefbf3;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .success {
+            color: #27ae60;
+            background: #f2fdf5;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .description-text {
+            line-height: 1.6;
+            font-size: 1em;
+            color: #2c3e50;
+            white-space: pre-wrap;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #27ae60;
+        }
+
+        .status-error {
+            background: #e74c3c;
+        }
+
+        .status-loading {
+            background: #f39c12;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .connection-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .connection-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .connection-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .debug-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 0.8em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .debug-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .debug-log {
+            color: #6c757d;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .input-panel,
+            .output-panel {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+            }
+
+            .output-panel:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦙 Llama 3.2 VLM Model Comparison</h1>
+            <p>Compare product descriptions generated by base and fine-tuned models</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Panel -->
+            <div class="input-panel">
+                <div class="panel-title">📤 Input Image</div>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click to upload or drag & drop an image</div>
+                    <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                </div>
+
+                <img id="imagePreview" class="image-preview" style="display: none;">
+
+                <div class="form-group">
+                    <label for="productName">Product Name:</label>
+                    <input type="text" id="productName" placeholder="Enter product name" value="Test Product">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category:</label>
+                    <input type="text" id="category" placeholder="Enter product category" value="Electronics">
+                </div>
+
+                <button class="btn" id="generateBtn" onclick="generateDescriptions()" disabled>
+                    🚀 Generate Descriptions
+                </button>
+                
+                <button class="btn" onclick="checkServerStatusWithRetry()" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                    🔄 Retry Connection
+                </button>
+
+                <div style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d;">
+                    <div>Base Model: <span class="status-indicator" id="baseStatus"></span><span
+                            id="baseStatusText">Checking...</span></div>
+                    <div>Fine-tuned Model: <span class="status-indicator" id="finetunedStatus"></span><span
+                            id="finetunedStatusText">Checking...</span></div>
+                </div>
+
+                <div id="connectionStatus" class="connection-status" style="display: none;"></div>
+
+                <div class="debug-panel">
+                    <div class="debug-title">🔍 Debug Information</div>
+                    <div id="debugLog" class="debug-log">Starting up...</div>
+                </div>
+            </div>
+
+            <!-- Base Model Output Panel -->
+            <div class="output-panel base-panel">
+                <div class="panel-title">🤖 Base Model Generation</div>
+                <div class="output-content" id="baseOutput">
+                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                        Upload an image and click "Generate Descriptions" to see the base model output
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fine-tuned Model Output Panel -->
+            <div class="output-panel finetuned-panel">
+                <div class="panel-title">🎯 Fine-tuned Model Generation</div>
+                <div class="output-content" id="finetunedOutput">
+                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                        Upload an image and click "Generate Descriptions" to see the fine-tuned model output
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedImage = null;
+        let debugLogs = [];
+        // Use localhost:5000 for port-forward setup
+        const serverUrl = 'http://localhost:5000';
+
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLogs.push(`[${timestamp}] ${message}`);
+            if (debugLogs.length > 10) {
+                debugLogs.shift(); // Keep only last 10 logs
+            }
+            document.getElementById('debugLog').textContent = debugLogs.join('\n');
+        }
+
+        // Check server status on load with retry
+        window.onload = function () {
+            addDebugLog('UI loaded, checking server status...');
+            checkServerStatusWithRetry();
+        };
+
+        async function checkServerStatusWithRetry(maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    await checkServerStatus();
+                    return; // Success, exit retry loop
+                } catch (error) {
+                    if (i < maxRetries - 1) {
+                        addDebugLog(`Retry ${i + 1}/${maxRetries} in 2 seconds...`);
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+            }
+            addDebugLog('All connection attempts failed');
+        }
+
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const generateBtn = document.getElementById('generateBtn');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            addDebugLog(`Image selected: ${file.name} (${file.size} bytes)`);
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                selectedImage = e.target.result;
+                imagePreview.src = selectedImage;
+                imagePreview.style.display = 'block';
+                generateBtn.disabled = false;
+                addDebugLog('Image loaded and preview displayed');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateStatus(model, status) {
+            const statusIndicator = document.getElementById(`${model}Status`);
+            const statusText = document.getElementById(`${model}StatusText`);
+
+            if (status.loaded) {
+                statusIndicator.className = 'status-indicator status-healthy';
+                statusText.textContent = 'Online';
+            } else if (status.status && status.status.includes('Error')) {
+                statusIndicator.className = 'status-indicator status-error';
+                statusText.textContent = 'Error';
+            } else {
+                statusIndicator.className = 'status-indicator status-loading';
+                statusText.textContent = 'Loading...';
+            }
+        }
+
+        function updateConnectionStatus(isConnected, message) {
+            const connectionStatus = document.getElementById('connectionStatus');
+            connectionStatus.style.display = 'block';
+            
+            if (isConnected) {
+                connectionStatus.className = 'connection-status connection-success';
+                connectionStatus.textContent = `✅ Connected: ${message}`;
+            } else {
+                connectionStatus.className = 'connection-status connection-error';
+                connectionStatus.textContent = `❌ Connection failed: ${message}`;
+            }
+        }
+
+        async function checkServerStatus() {
+            try {
+                addDebugLog(`Checking server health at ${serverUrl}/health`);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch(`${serverUrl}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                addDebugLog(`Server response: ${data.status}`);
+
+                // Update model statuses based on actual server response
+                if (data.models) {
+                    updateStatus('base', data.models.base);
+                    updateStatus('finetuned', data.models.finetuned);
+                    addDebugLog(`Models - Base: ${data.models.base.status}, Finetuned: ${data.models.finetuned.status}`);
+                } else {
+                    // Fallback if models info not available
+                    document.getElementById('baseStatus').className = 'status-indicator status-healthy';
+                    document.getElementById('baseStatusText').textContent = 'Online';
+                    document.getElementById('finetunedStatus').className = 'status-indicator status-healthy';
+                    document.getElementById('finetunedStatusText').textContent = 'Online';
+                }
+
+                updateConnectionStatus(true, `Server is ${data.status || 'healthy'}`);
+
+            } catch (error) {
+                let errorMessage = error.message;
+                
+                // Provide more helpful error messages
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Connection timeout - server may be starting up';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Cannot connect to server - check if it\'s running on port 5000';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMessage = 'Network error - check your connection';
+                }
+                
+                addDebugLog(`Connection error: ${errorMessage}`);
+                
+                // Update UI to show connection error
+                document.getElementById('baseStatus').className = 'status-indicator status-error';
+                document.getElementById('baseStatusText').textContent = 'Offline';
+                document.getElementById('finetunedStatus').className = 'status-indicator status-error';
+                document.getElementById('finetunedStatusText').textContent = 'Offline';
+                
+                updateConnectionStatus(false, errorMessage);
+            }
+        }
+
+        async function generateDescriptions() {
+            if (!selectedImage) {
+                alert('Please select an image first');
+                return;
+            }
+
+            const productName = document.getElementById('productName').value || 'Unknown Product';
+            const category = document.getElementById('category').value || 'General';
+
+            // Convert image to base64 (remove data:image/...;base64, prefix)
+            const base64Image = selectedImage.split(',')[1];
+
+            const requestData = {
+                image: base64Image,
+                product_name: productName,
+                category: category
+            };
+
+            addDebugLog(`Starting generation for ${productName} (${category})`);
+            addDebugLog(`Image size: ${base64Image.length} characters`);
+
+            // Show loading states
+            document.getElementById('baseOutput').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Generating with base model...</div>
+                </div>
+            `;
+
+            document.getElementById('finetunedOutput').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Generating with fine-tuned model...</div>
+                </div>
+            `;
+
+            // Generate with both models
+            try {
+                addDebugLog('Sending request to /generate/both');
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+                
+                const response = await fetch(`${serverUrl}/generate/both`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                addDebugLog(`Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                addDebugLog(`Response received with status: ${result.status}`);
+
+                if (result.status === 'success' || result.status === 'partial') {
+                    // Handle base model result
+                    if (result.descriptions.base && !result.descriptions.base.startsWith('Error:')) {
+                        displayResult('baseOutput', { 
+                            status: 'success', 
+                            description: result.descriptions.base 
+                        }, 'Base Model');
+                    } else {
+                        displayResult('baseOutput', { 
+                            status: 'error', 
+                            error: result.descriptions.base || 'Unknown error' 
+                        }, 'Base Model');
+                    }
+                    
+                    // Handle fine-tuned model result
+                    if (result.descriptions.finetuned && !result.descriptions.finetuned.startsWith('Error:')) {
+                        displayResult('finetunedOutput', { 
+                            status: 'success', 
+                            description: result.descriptions.finetuned 
+                        }, 'Fine-tuned Model');
+                    } else {
+                        displayResult('finetunedOutput', { 
+                            status: 'error', 
+                            error: result.descriptions.finetuned || 'Unknown error' 
+                        }, 'Fine-tuned Model');
+                    }
+
+                    if (result.status === 'partial') {
+                        addDebugLog('Partial success - some models had errors');
+                        if (result.errors) {
+                            addDebugLog(`Errors: ${JSON.stringify(result.errors)}`);
+                        }
+                    } else {
+                        addDebugLog('Generation completed successfully');
+                    }
+                } else {
+                    throw new Error(result.error || 'Unknown error from server');
+                }
+
+            } catch (error) {
+                addDebugLog(`Generation failed: ${error.message}`);
+                const errorMessage = `Failed to get descriptions: ${error.message}`;
+                displayResult('baseOutput', { status: 'error', error: errorMessage }, 'Base Model');
+                displayResult('finetunedOutput', { status: 'error', error: errorMessage }, 'Fine-tuned Model');
+            }
+        }
+
+        function displayResult(elementId, result, modelName) {
+            const element = document.getElementById(elementId);
+
+            if (result.status === 'success') {
+                element.innerHTML = `
+                    <div class="success">
+                        <strong>${modelName} Response:</strong>
+                    </div>
+                    <div class="description-text">
+                        ${result.description.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+            } else {
+                // Check if it's a CUDA error
+                const isCudaError = result.error && (
+                    result.error.includes('CUDA') || 
+                    result.error.includes('index out of bounds') ||
+                    result.error.includes('device-side assert')
+                );
+                
+                element.innerHTML = `
+                    <div class="error">
+                        <strong>Error from ${modelName}:</strong><br>
+                        ${result.error || 'Unknown error occurred'}
+                        ${isCudaError ? '<br><br><em>This appears to be a CUDA memory/indexing error. The server may need to be restarted.</em>' : ''}
+                    </div>
+                `;
+            }
+        }
+
+        // Refresh server status every 30 seconds
+        setInterval(checkServerStatus, 30000);
+    </script>
+</body>
+
+</html>
