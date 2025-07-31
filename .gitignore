@@ -2,28 +2,46 @@
 !.gitignore
 
 # Terraform sensitive files
-./**/terraform_backend_override.tf
-./**/terraform.tfvars
-./**/terraform.tfvars.backup
-.**/terraform.tfvars.*
-./**/terraform.tfstate
-./**/terraform.tfstate.backup
-./**/terraform.tfstate.*.backup
-.**/.terraform/
-.**/.terraform.lock.hcl
-.**/terraform.tfplan
-.**/terraform.tfplan.*
+**/terraform_backend_override.tf
+**/terraform.tfvars
+**/terraform.tfvars.backup
+**/terraform.tfvars.*
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/terraform.tfstate.*.backup
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfplan
+**/terraform.tfplan.*
+terraform_backend_override.tf
+terraform.tfvars
+terraform.tfvars.backup
+terraform.tfvars.*
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfstate.*.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfplan
+terraform.tfplan.*
 
 # Login scripts and credentials
-./**/login*.sh
-./**/*credentials*
-./**/*secrets*
-./**/*token*
+**/login*.sh
+**/*credentials*
+**/*secrets*
+**/*token*
+login*.sh
+*credentials*
+*secrets*
+*token*
 
 # Environment files
-./**/.env
-./**/.envrc
-.**/environment.sh
+**/.env
+**/.envrc
+**/environment.sh
+.env
+.envrc
+environment.sh
 
 # MLflow and experiment data
 .**/mlruns/
