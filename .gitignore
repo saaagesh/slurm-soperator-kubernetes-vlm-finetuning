@@ -4,11 +4,15 @@
 # Terraform sensitive files
 ./**/terraform_backend_override.tf
 ./**/terraform.tfvars
+./**/terraform.tfvars.backup
+.**/terraform.tfvars.*
 ./**/terraform.tfstate
 ./**/terraform.tfstate.backup
 ./**/terraform.tfstate.*.backup
 .**/.terraform/
 .**/.terraform.lock.hcl
+.**/terraform.tfplan
+.**/terraform.tfplan.*
 
 # Login scripts and credentials
 ./**/login*.sh
