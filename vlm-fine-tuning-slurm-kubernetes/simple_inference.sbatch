@@ -68,7 +68,7 @@ fi
 cd "$WORK_DIR"
 echo "Changed to working directory: $(pwd)"
 
-# Create simple requirements.txt for the notebook approach
+# Create simple requirements.txt
 if [ ! -f "requirements.txt" ]; then
     echo "Creating simple requirements.txt..."
     cat > requirements.txt << 'EOF'
@@ -155,7 +155,7 @@ fi
 echo "=== Starting Simple Inference Server ==="
 echo "Server will be available on port 5000"
 echo "Model path: $MODEL_PATH"
-echo "Using notebook approach: copy.deepcopy() + load_adapter()"
+echo ""
 echo "Starting at: $(date)"
 
 python3 simple_inference_server.py

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Simple Inference Server - Based on llama32_11b_vlm.ipynb
-Clean implementation following the exact notebook approach
+Clean implementation 
 """
 
 import os
@@ -40,12 +40,12 @@ def log_with_timestamp(message):
 
 def load_fine_tune_model(base_model_id="meta-llama/Llama-3.2-11B-Vision", adapter_path=None):
     """
-    Load models exactly as in the notebook
+    Load models 
     """
     global base_model, model_ft, processor, models_loaded, loading_status
     
     try:
-        log_with_timestamp("Loading models using notebook approach...")
+        log_with_timestamp("Loading models...")
         
         # Handle authentication
         hf_token = os.environ.get('HF_TOKEN')
@@ -71,37 +71,37 @@ def load_fine_tune_model(base_model_id="meta-llama/Llama-3.2-11B-Vision", adapte
         
         log_with_timestamp(f"Using adapter path: {adapter_path}")
         
-        # Load processor (from notebook)
+        # Load processor 
         from transformers import AutoProcessor, AutoModelForVision2Seq
         
         loading_status["base"] = "Loading processor..."
         processor = AutoProcessor.from_pretrained(base_model_id)
         log_with_timestamp("✓ Processor loaded")
         
-        # Load base model (from notebook)
+        # Load base model
         loading_status["base"] = "Loading base model..."
         base_model = AutoModelForVision2Seq.from_pretrained(
             base_model_id,
             device_map="auto",
-            torch_dtype=torch.float16  # Using float16 as in notebook
+            torch_dtype=torch.float16  # Using float16
         )
         models_loaded["base"] = True
         loading_status["base"] = "Ready"
         log_with_timestamp("✓ Base model loaded")
         
-        # Create fine-tuned model (from notebook approach)
+        # Create fine-tuned model 
         loading_status["finetuned"] = "Creating fine-tuned model..."
         model_ft = copy.deepcopy(base_model)
         log_with_timestamp("✓ Created deep copy of base model")
         
-        # Load adapter (from notebook)
+        # Load adapter
         loading_status["finetuned"] = "Loading adapter..."
         model_ft.load_adapter(adapter_path)
         models_loaded["finetuned"] = True
         loading_status["finetuned"] = "Ready"
         log_with_timestamp("✓ Fine-tuned model loaded with adapter")
         
-        log_with_timestamp("✓ All models loaded successfully using notebook approach!")
+        log_with_timestamp("✓ All models loaded successfully!")
         
     except Exception as e:
         log_with_timestamp(f"✗ Error loading models: {e}")
@@ -114,9 +114,9 @@ def load_fine_tune_model(base_model_id="meta-llama/Llama-3.2-11B-Vision", adapte
 
 def generate(model, sample, processor):
     """
-    Generate function exactly from the notebook
+    Generate function exactly
     """
-    # Prompt template from notebook
+    # Prompt template
     prompt = """Create a Short Product description based on the provided ##PRODUCT NAME## and ##CATEGORY## and image.
 Only return description. The description should be SEO optimized and for a better mobile search experience.
 
@@ -125,7 +125,7 @@ Only return description. The description should be SEO optimized and for a bette
     
     system_message = "You are an expert product description writer for Amazon."
     
-    # Format prompt exactly as in notebook
+    # Format prompt exactly
     formatted_prompt = prompt.format(product_name=sample["Product Name"], category=sample["Category"])
     formatted_prompt = ("<|begin_of_text|>"
             f"<|start_header_id|>system<|end_header_id|>{system_message}<|eot_id|>"
@@ -135,17 +135,17 @@ Only return description. The description should be SEO optimized and for a bette
     
     image = sample['image']
     
-    # Handle URL images (from notebook)
+    # Handle URL images 
     if isinstance(image, str) and image.startswith("https://"):
         response = requests.get(image)
         response.raise_for_status()
         image = Image.open(BytesIO(response.content)).convert("RGB")
     
-    # Process inputs (from notebook)
+    # Process inputs
     inputs = processor(images=[image], text=formatted_prompt, padding=True, return_tensors="pt")
     inputs = inputs.to(model.device)
     
-    # Generate (from notebook)
+    # Generate
     generated_ids = model.generate(**inputs, max_new_tokens=256, temperature=0.8, top_p=0.9, do_sample=True)
     generated_ids_trimmed = [out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
     output_text = processor.batch_decode(
@@ -189,7 +189,7 @@ def status():
     return jsonify({
         "server": "Simple Inference Server",
         "version": "1.0",
-        "approach": "Notebook-based with copy.deepcopy() and load_adapter()",
+        "approach":,
         "models": {
             "base": {
                 "loaded": models_loaded["base"],
@@ -221,14 +221,14 @@ def generate_base():
         # Preprocess image
         image = preprocess_image(data['image'])
         
-        # Create sample in notebook format
+        # Create sample
         sample = {
             "Product Name": data.get('product_name', 'Unknown Product'),
             "Category": data.get('category', 'General'),
             "image": image
         }
         
-        # Generate using notebook function
+        # Generate using function
         description = generate(base_model, sample, processor)
         
         return jsonify({
@@ -263,14 +263,14 @@ def generate_finetuned():
         # Preprocess image
         image = preprocess_image(data['image'])
         
-        # Create sample in notebook format
+        # Create sample
         sample = {
             "Product Name": data.get('product_name', 'Unknown Product'),
             "Category": data.get('category', 'General'),
             "image": image
         }
         
-        # Generate using notebook function
+        # Generate using  function
         description = generate(model_ft, sample, processor)
         
         return jsonify({
@@ -310,7 +310,7 @@ def generate_both():
         # Preprocess image
         image = preprocess_image(data['image'])
         
-        # Create sample in notebook format
+        # Create sample
         sample = {
             "Product Name": data.get('product_name', 'Unknown Product'),
             "Category": data.get('category', 'General'),
@@ -342,7 +342,7 @@ def serve_ui():
     return """
     <html><body>
     <h1>Simple Llama 3.2 VLM Inference Server</h1>
-    <p>Based on notebook approach with copy.deepcopy() and load_adapter()</p>
+    <p></p>
     <p>Server is running! API endpoints available:</p>
     <ul>
         <li><a href="/health">/health</a> - Server health check</li>
@@ -357,7 +357,7 @@ def serve_ui():
 def main():
     """Main function"""
     log_with_timestamp("Starting Simple Inference Server...")
-    log_with_timestamp("Using notebook approach: copy.deepcopy() + load_adapter()")
+    log_with_timestamp("Using load_adapter()")
     
     # Print system info
     log_with_timestamp(f"Python version: {sys.version}")
